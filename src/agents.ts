@@ -1,13 +1,19 @@
 const npm = {
-  ni: 'npm install',
+  install: 'npm i {0}',
+  add: 'npm i {0}',
+  global: 'npm i -g {0}',
 }
 
 const pnpm = {
-  ni: 'pnpm install',
+  install: 'pnpm i {0}',
+  add: 'pnpm add {0}',
+  global: 'pnpm add -g {0}',
 }
 
 const yarn = {
-  ni: 'yarn install',
+  install: 'yarn i {0}',
+  add: 'yarn add {0}',
+  global: 'yarn global add {0}',
 }
 
 export const AGENTS = {

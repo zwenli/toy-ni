@@ -2,8 +2,7 @@ import path from 'node:path'
 import { findUp } from 'find-up'
 import type { Agent } from './agents'
 import { LOCKS } from './agents'
-
-interface DetectOptions {
+export interface DetectOptions {
   cwd?: string
 }
 
