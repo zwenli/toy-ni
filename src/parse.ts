@@ -5,6 +5,9 @@ import { AGENTS } from './agents'
 import { exclude } from './utils'
 
 export function getCommand(agent: Agent, command: Command, args: string[] = []) {
+  if (!(agent in AGENTS))
+    throw new Error(`Unsupported agent "${agent}"`)
+
   const c = AGENTS[agent][command]
 
   // if (typeof c === 'function')
