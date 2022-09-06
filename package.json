@@ -6,6 +6,11 @@
   "description": "",
   "author": "",
   "license": "ISC",
+  "homepage": "https://github.com/zwenli/toy-ni",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zwenli/toy-ni.git"
+  },
   "keywords": [],
   "exports": {
     ".": {
@@ -28,11 +33,13 @@
     "lint": "eslint --fix .",
     "test": "vitest",
     "build": "unbuild",
-    "stub": "unbuild --stub"
+    "stub": "unbuild --stub",
+    "release": "bumpp && npm publish"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.25.2",
     "@types/node": "^18.6.1",
+    "bumpp": "^8.2.1",
     "eslint": "^8.20.0",
     "execa": "^6.1.0",
     "fast-glob": "^3.2.11",
