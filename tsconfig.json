@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2017", // 编译输出的符合改版本的js
+    "module": "esnext", // 指定模块标准，如果不显式配置module，那么其值与target的配置有关
+    "lib": ["esnext"], // 指定要引入的库文件，不配置默认为 dom
+    "moduleResolution": "node", // 模块解析策略，这里使用node，这里的配置受 module 影响的
+    "strict": true, // 严格模式
+    "strictNullChecks": true,
+    "esModuleInterop": true, // commonjs和es6模块转换问题，设置true会修复缺陷
+    "resolveJsonModule": true // 解析 .json 文件
+  }
+}

@@ -280,6 +280,100 @@ export function getCommand(
 }
 ```
 
+## 测试用例
+`@antfu/ni` 使用 `vitest` 管理测试用例，测试用例管理逻辑如下：
+* 命令目录，如`ni`
+  * agent对应的测试用例，如 `npm.spec.ts`
+
+
+## build
+`@antfu/ni` 使用 [`unbulid`](https://github.com/unjs/unbuild) 工具来构建代码。
+
+在使用 unbuild 之前，需要在根目录下创建 `build.config.ts`文件。
+
+这里配置如下
+```ts
+import { defineBuildConfig } from 'unbuild'
+import fg from 'fast-glob'
+
+export default defineBuildConfig({
+  entries: [
+    ...fg.sync('src/commands/*.ts').map(i => i.slice(0, -3)),
+  ], // 构建入口
+  // outDir: 'dist', // 构建输入目录，默认为 dist
+  clean: true, // 构建前是否清除dist输入目录下的文件，默认为false
+  declaration: true, // 输出 .d.ts 文件
+  rollup: {
+    emitCJS: true, // 输出 commonjs 文件
+    inlineDependencies: true, // 忽略内部依赖的警告
+  },
+})
+```
+默认输出mjs，上述的配置中，增加了 .d.ts，cjs 的输出。
+
+之后在`script`增加命令 `"build": "unbuild"`，接着执行指令 `pnpm run build`，
+即可构建代码了。
+
+当然在构建会出现报错，原因是未配置 `tsconfig.json`，按照提示，增加如下配置：
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017", // 编译输出的符合改版本的js
+    "module": "esnext", // 指定模块标准，如果不显式配置module，那么其值与target的配置有关
+    "lib": ["esnext"], // 指定要引入的库文件，不配置默认为 dom
+    "moduleResolution": "node", // 模块解析策略，这里使用node，这里的配置受 module 影响的
+    "strict": true, // 严格模式
+    "strictNullChecks": true,
+    "esModuleInterop": true, // commonjs和es6模块转换问题，设置true会修复缺陷
+    "resolveJsonModule": true // 解析 .json 文件
+  }
+}
+```
+
+### stub
+unbuild 中有个 stub 的概念，不同于webpack，在每次修改源代码需要启动一个监视程序才能重新触发构建。unbuild 只需要调用命令
+```shell
+unbuild --stub
+```
+生成的文件内容如下：
+```js
+import jiti from "file:////path/to/node_modules/.pnpm/jiti@1.14.0/node_modules/jiti/lib/index.js";
+
+/** @type {import("//path/to/src/commands/ni")} */
+const _module = jiti(null, { interopDefault: true, esmResolve: true })("//path/to/src/commands/ni.ts");
+
+export default _module;
+```
+从代码中可以看到，unbuild并没有直接构建代码，而是通过 jiti 重定向到源代码。jiti通过动态编译，为 typescript 和
+esm 提供了运行时支持。因为它直接指向你的源文件，所以在你的源代码和bundle dist之间不会有错位。因此不需要观察者进程
+
+### package.json 配置
+构建代码的代码，如果直接发布npm，npm包是不能正常使用的，还需要在package.json 配置相关信息，如下：
+```json
+{
+  // 节选
+  "type": "module", // 定义npm包使用 esmodule 模块语法
+  "exports": { // 新的入口文件定义格式，定义npm包的入口文件，
+    ".": {
+      "require": "./dist/index.cjs", // commonjs 规范的入口文件
+      "import": "./dist/index.mjs" // esmodule 规范的入口文件
+    }
+  },
+  "main": "dist/index.cjs", // 定义npm包的入口文件，browser和node均支持
+  "module": "dist/index.mjs", // 定义npm包的ESM规范的入口文件，browser 环境和 node 环境均可使用
+  "types": "dist/index.d.ts", // 类型声明的入口文件
+  "bin": { // npm包的可执行文件，命令行输入 ni，即运行 bin/ni.mjs 文件
+    "ni": "bin/ni.mjs"
+  },
+}
+```
+
+### bin 文件
+bin 文件 必须以 `#!/usr/bin/env node`开头，之后就是正常的js文件了
+
+当在package.json 配置了bin之后，如 `"bin": {"ni": "bin/ni.mjs"}`，
+那么在安装此npm包时，会创建一个链接 `/usr/local/bin/ni` 指向 `bin/ni.mjs`
+
 ## 相关库说明
 
 * tsx: 等同 ts-node, 用来直接运行ts文件的工具
@@ -287,3 +381,4 @@ export function getCommand(
 * find-up: 遍历父目录查找文件/目录的工具
 * terminalLink: 生产命令行链接的工具
 * execa: 改进 child_process 函数的工具
+* unbuild: 构建工具
